@@ -7,31 +7,31 @@ import (
 	"os/exec"
 )
 
-func checkAndInstallFluentBit() error {
+func verificarEInstalarFluentBit() error {
 	_, err := exec.LookPath("fluent-bit")
 	if err != nil {
-		log.Println("FluentBit not found, installing...")
+		log.Println("FluentBit não encontrado, instalando...")
 		cmd := exec.Command("brew", "install", "fluent-bit")
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("failed to install FluentBit: %v", err)
+		erro := cmd.Run()
+		if erro != nil {
+			return fmt.Errorf("falha ao instalar FluentBit: %v", erro)
 		}
-		log.Println("FluentBit installed successfully.")
+		log.Println("FluentBit instalado com sucesso.")
 	}
 	return nil
 }
 
-func configureFluentBit() error {
-	config := `[INPUT]
+func configurarFluentBit() error {
+	configuracao := `[INPUT]
     Name              tail
     Path              /var/log/myapp.log
     Multiline         On
-    Parser_Firstline  my_parser
+    Parser_Firstline  meu_parser
     DB                /var/log/myapp.db
     Tag               myapp
 
 [PARSER]
-    Name        my_parser
+    Name        meu_parser
     Format      json
     Time_Key    timestamp
     Time_Format %Y-%m-%dT%H:%M:%S
@@ -42,44 +42,44 @@ func configureFluentBit() error {
     Host              logstash_host
     Port              5044
 `
-	configPath := "/etc/fluent-bit/fluent-bit.conf"
-	file, err := os.Create(configPath)
+	caminhoConfig := "/etc/fluent-bit/fluent-bit.conf"
+	arquivo, err := os.Create(caminhoConfig)
 	if err != nil {
-		return fmt.Errorf("failed to create FluentBit config: %v", err)
+		return fmt.Errorf("falha ao criar configuração do FluentBit: %v", err)
 	}
-	defer file.Close()
+	defer arquivo.Close()
 
-	_, err = file.WriteString(config)
+	_, err = arquivo.WriteString(configuracao)
 	if err != nil {
-		return fmt.Errorf("failed to write FluentBit config: %v", err)
+		return fmt.Errorf("falha ao escrever configuração do FluentBit: %v", err)
 	}
-	log.Println("FluentBit configured successfully.")
+	log.Println("FluentBit configurado com sucesso.")
 	return nil
 }
 
-func startFluentBit() error {
+func iniciarFluentBit() error {
 	cmd := exec.Command("fluent-bit", "-c", "/etc/fluent-bit/fluent-bit.conf")
-	err := cmd.Start()
-	if err != nil {
-		return fmt.Errorf("failed to start FluentBit: %v", err)
+	erro := cmd.Start()
+	if erro != nil {
+		return fmt.Errorf("falha ao iniciar FluentBit: %v", erro)
 	}
-	log.Println("FluentBit started successfully.")
+	log.Println("FluentBit iniciado com sucesso.")
 	return nil
 }
 
 func main() {
-	err := checkAndInstallFluentBit()
-	if err != nil {
-		log.Fatalf("Error during FluentBit installation: %v", err)
+	erro := verificarEInstalarFluentBit()
+	if erro != nil {
+		log.Fatalf("Erro durante a instalação do FluentBit: %v", erro)
 	}
 
-	err = configureFluentBit()
-	if err != nil {
-		log.Fatalf("Error during FluentBit configuration: %v", err)
+	erro = configurarFluentBit()
+	if erro != nil {
+		log.Fatalf("Erro durante a configuração do FluentBit: %v", erro)
 	}
 
-	err = startFluentBit()
-	if err != nil {
-		log.Fatalf("Error during FluentBit startup: %v", err)
+	erro = iniciarFluentBit()
+	if erro != nil {
+		log.Fatalf("Erro ao iniciar o FluentBit: %v", erro)
 	}
 }
